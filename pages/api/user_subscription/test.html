@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Firebase Realtime Database Listener</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+
+  <body>
+    <ul id="dataList" style="display: none"></ul>
+    <canvas id="myChart"></canvas>
+
+    <script>
+      // Your web app's Firebase configuration
+      // var firebaseConfig = {
+      //     apiKey: "your-api-key",
+      //     authDomain: "your-auth-domain",
+      //     databaseURL: "your-database-url",
+      //     projectId: "your-project-id",
+      //     storageBucket: "your-storage-bucket",
+      //     messagingSenderId: "your-messaging-sender-id",
+      //     appId: "your-app-id"
+      // };
+      const firebaseConfig = {
+        apiKey: "AIzaSyCwJ7pJOVJSEVtAE98yDmMtwfhNsEOfG2c",
+        authDomain: "mythril-9cf7c.firebaseapp.com",
+        databaseURL: "https://mythril-9cf7c-default-rtdb.firebaseio.com",
+        projectId: "mythril-9cf7c",
+        storageBucket: "mythril-9cf7c.appspot.com",
+        messagingSenderId: "292787409077",
+        appId: "1:292787409077:web:8cf2c121b200ac028ceefc",
+        measurementId: "G-ENQ6RBSXWP",
+      };
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+
+      var dbRef = firebase.database().ref();
+
+      var ctx = document.getElementById("myChart").getContext("2d");
+      var chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Firebase Data",
+              data: [],
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 1,
+            },
+          ],
+        },
+      });
+
+      dbRef.orderByChild("timestamp").on("value", function (snapshot) {
+        var data = snapshot.val();
+
+        chart.data.labels = Object.keys(data);
+        chart.data.datasets[0].data = Object.values(data);
+
+        // Update the chart
+        chart.update();
+
+        var list = document.getElementById("dataList");
+        // Clear previous list
+        list.innerHTML = "";
+
+        for (var key in data) {
+          if (data.hasOwnProperty(key)) {
+            // Create new list item for each entry
+            var li = document.createElement("li");
+            li.textContent = data[key];
+            list.appendChild(li);
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

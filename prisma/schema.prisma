@@ -1,0 +1,691 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Checking {
+  id         BigInt    @id @default(autoincrement())
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  name       String?   @db.VarChar
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model algolia_data {
+  id         BigInt    @id @default(autoincrement())
+  meta_key   String?   @db.VarChar
+  meta_value Json?     @db.Json
+  item_id    String?   @db.VarChar
+  type       String?   @db.VarChar
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at DateTime? @db.Timestamp(6)
+}
+
+model areas_of_interest {
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  label      String?   @db.VarChar
+  type       String?   @db.VarChar
+}
+
+model article_categories {
+  label                    String?                    @db.Citext
+  image                    String?
+  type                     String?
+  id                       String                     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created_at               DateTime?                  @default(now()) @db.Timestamp(6)
+  article_category_filters article_category_filters[]
+  articles                 articles[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model article_category_filters {
+  filter_name        String?             @db.Citext
+  id                 String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created_at         DateTime?           @default(now()) @db.Timestamp(6)
+  parent_category    String?             @db.Uuid
+  price              BigInt?             @default(0)
+  article_categories article_categories? @relation(fields: [parent_category], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  articles           articles[]
+}
+
+model articles {
+  id                       String                    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  title                    String?                   @db.Citext
+  description              String?
+  article_body             String?
+  time_published           DateTime?                 @default(now()) @db.Timestamp(6)
+  Author                   String?                   @db.Uuid
+  webflow_id               String?
+  thumbnail                String?
+  hero_image               String?
+  category                 String?
+  business                 String?
+  category_id              String?                   @db.Uuid
+  category_filter_id       String?                   @db.Uuid
+  user_id                  String?                   @db.Uuid
+  organization_id          String?                   @db.Uuid
+  is_approved              BigInt?                   @default(0)
+  is_blocked               BigInt?                   @default(0)
+  item_zoho_id             String?                   @db.VarChar
+  notable_figures          notable_figures?          @relation(fields: [Author], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  article_category_filters article_category_filters? @relation(fields: [category_filter_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  article_categories       article_categories?       @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  organizations            organizations?            @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                    users?                    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model avail_deal_users {
+  id         BigInt    @id @default(autoincrement())
+  deal_id    String?   @db.Uuid
+  user_id    String?   @db.Uuid
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  item_id    String?
+  type       String?
+  deals      deals?    @relation(fields: [deal_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model cities {
+  id                              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                            String?
+  state                           String?
+  country                         String?
+  country_cities_countryTocountry country?  @relation("cities_countryTocountry", fields: [country], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  state_cities_stateTostate       state?    @relation("cities_stateTostate", fields: [state], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  courses                         courses[]
+  users                           users[]
+}
+
+model contact_users {
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  name       String?   @db.VarChar
+  email      String?   @db.VarChar
+  phone      String?   @db.VarChar
+  city       String?   @db.VarChar
+  notes      String?
+}
+
+model country {
+  id                             String   @id
+  cities_cities_countryTocountry cities[] @relation("cities_countryTocountry")
+  state_state_countryTocountry   state[]  @relation("state_countryTocountry")
+}
+
+model course_categories {
+  id                      String                    @id
+  image                   String?
+  type                    course_category_type?
+  created_at              DateTime?                 @default(now()) @db.Timestamp(6)
+  course_category_filters course_category_filters[]
+  courses                 courses[]
+}
+
+model course_category_filters {
+  name              String?            @db.Citext
+  id                String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created_at        DateTime?          @default(now()) @db.Timestamp(6)
+  parent_category   String?
+  price             BigInt?
+  course_categories course_categories? @relation(fields: [parent_category], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model courses {
+  id                String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created_at        DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?          @default(now()) @db.Timestamptz(6)
+  organization      String?            @db.Uuid
+  title             String?            @db.Citext
+  short_description String?
+  long_description  String?
+  category          String?
+  date              DateTime?          @db.Date
+  trending          Boolean?           @default(false)
+  buyable           Boolean?
+  stripe_product_id String?
+  online            Boolean?           @default(false)
+  city              String?            @db.Uuid
+  teachers          Json?              @default("[]") @db.Json
+  Price             Float?
+  CE                Float?             @db.Real
+  category_filters  String?
+  price_mode        String?            @db.VarChar
+  course_mode       BigInt?
+  featured          BigInt?            @default(0)
+  video             String?            @db.VarChar
+  provider_link     String?
+  is_approved       BigInt?            @default(0)
+  is_blocked        BigInt?            @default(0)
+  item_zoho_id      String?            @db.VarChar
+  course_categories course_categories? @relation(fields: [category], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  cities            cities?            @relation(fields: [city], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  courses_mode      courses_mode?      @relation(fields: [course_mode], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  organizations     organizations?     @relation(fields: [organization], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model courses_mode {
+  id         BigInt    @id @default(autoincrement())
+  mode       String?   @db.VarChar
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  courses    courses[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model deals {
+  id               String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created_at       DateTime?          @default(now()) @db.Timestamptz(6)
+  vendor_id        String?            @db.Uuid
+  expiry_data      DateTime?          @db.Date
+  location         String?            @db.VarChar
+  net_savings      String?            @db.VarChar
+  coupon_code      String?            @db.VarChar
+  exclusive        String?            @db.VarChar
+  item_id          String?            @db.VarChar
+  type             String?            @db.VarChar
+  deal_type        String?            @db.VarChar
+  quantity         BigInt?
+  item_quantity    String?            @db.VarChar
+  free_quantity    BigInt?
+  is_expire        BigInt?            @default(0)
+  organization_id  String?            @db.Uuid
+  free_item_id     String?            @db.VarChar
+  tag_line         String?            @db.Citext
+  country          String?            @db.VarChar
+  is_approved      Boolean?
+  by_admin         BigInt?
+  favUsers         Json?              @db.Json
+  avail_deal_users avail_deal_users[]
+  organizations    organizations?     @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users            users?             @relation(fields: [vendor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model directory_companies {
+  id                            BigInt                         @id
+  company                       String?                        @db.Uuid
+  short_description             String?
+  long_description              String?
+  logo                          String?
+  infomercial                   String?
+  contact_email                 String?
+  contact_phone                 String?                        @db.VarChar
+  website                       String?
+  category                      String?                        @db.Uuid
+  attrs                         Json?                          @db.Json
+  company_name                  String?                        @db.Citext
+  created_at                    DateTime?                      @default(now()) @db.Timestamp(6)
+  is_approved                   BigInt?                        @default(0)
+  is_blocked                    BigInt?                        @default(0)
+  item_zoho_id                  String?                        @db.VarChar
+  directory_frontend_categories directory_frontend_categories? @relation(fields: [category], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  organizations                 organizations?                 @relation(fields: [company], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model directory_frontend_categories {
+  id                    String                  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                  String?                 @db.Citext
+  description           String?
+  image                 String?
+  created_at            DateTime?               @default(now()) @db.Timestamp(6)
+  directory_companies   directory_companies[]
+  directory_subcategory directory_subcategory[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model faqs {
+  id         BigInt    @id @default(autoincrement())
+  question   String?
+  answer     String?
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model featured {
+  id          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  is_expire   BigInt?   @default(0)
+  item_id     String?   @db.VarChar
+  expiry_date DateTime? @db.Date
+  type        String?   @db.VarChar
+  amount      BigInt?
+  created_at  DateTime? @default(now()) @db.Timestamptz(6)
+  is_featured BigInt?
+}
+
+model featured_slots {
+  id                   BigInt                 @id @default(autoincrement())
+  slot_name            String?                @db.Citext
+  slot_price           BigInt?                @default(0)
+  slot_type            String?                @db.VarChar
+  slot_position        BigInt?
+  slot_status          String?                @db.VarChar
+  created_at           DateTime?              @default(now()) @db.Timestamptz(6)
+  slot_hours           BigInt?
+  featured_slots_avail featured_slots_avail[]
+}
+
+model featured_slots_avail {
+  id                   String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id              String?         @db.Uuid
+  slot_id              BigInt?
+  slot_purchased_time  DateTime?       @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  created_at           DateTime?       @default(now()) @db.Timestamptz(6)
+  item_id              String?         @db.VarChar
+  item_type            String?         @db.VarChar
+  is_expire            BigInt?         @default(0)
+  pre_booked           BigInt?         @default(0)
+  pre_booked_date      DateTime?       @db.Date
+  pre_booked_time      DateTime?       @db.Timestamp(6)
+  pre_booked_time_from DateTime?       @db.Timestamp(6)
+  pre_booked_time_to   DateTime?       @db.Timestamp(6)
+  featured_slots       featured_slots? @relation(fields: [slot_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                users?          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model hero_section {
+  id              BigInt    @id @default(autoincrement())
+  title           String?   @db.VarChar
+  description_one String?   @db.VarChar
+  description_two String?   @db.VarChar
+  image           String?   @db.VarChar
+  type            String?   @db.VarChar
+  created_at      DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model introductory_videos {
+  id         BigInt    @id @default(autoincrement())
+  videos     Json[]
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model legal {
+  id         BigInt    @id @default(autoincrement())
+  title      String?
+  content    String?
+  type       String?
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model message {
+  id         BigInt    @id @default(autoincrement())
+  room_id    BigInt?
+  user_id    String?   @db.Uuid
+  message    String?
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  room       room?     @relation(fields: [room_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model notable_figures {
+  id         String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created_at DateTime?  @default(now()) @db.Timestamptz(6)
+  first_name String?
+  last_name  String?
+  short_bio  String?
+  long_bio   String?
+  picture    String?
+  title      Boolean?   @default(false)
+  articles   articles[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model organizations {
+  id                                           String                @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                                         String?               @db.Citext
+  controlling_user                             String?               @db.Uuid
+  balance                                      Float?                @default(150)
+  credit_used                                  Boolean?              @default(false)
+  organization_user                            String?               @db.Uuid
+  organization_type                            String?               @db.VarChar
+  created_at                                   DateTime?             @default(now()) @db.Timestamp(6)
+  url                                          String?               @db.VarChar
+  by_Admin                                     BigInt?
+  articles                                     articles[]
+  courses                                      courses[]
+  deals                                        deals[]
+  directory_companies                          directory_companies[]
+  users_organizations_organization_userTousers users?                @relation("organizations_organization_userTousers", fields: [organization_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  products                                     products[]
+  purchases                                    purchases[]
+  ratings                                      ratings[]
+  users_users_organization_idToorganizations   users[]               @relation("users_organization_idToorganizations")
+}
+
+model product_category {
+  id                        String                    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                      String?                   @db.Citext
+  parent_category           String
+  created_at                DateTime?                 @default(now()) @db.Timestamp(6)
+  price                     BigInt?                   @default(0)
+  product_parent_categories product_parent_categories @relation(fields: [parent_category], references: [name], onDelete: NoAction, onUpdate: NoAction)
+  products                  products[]
+}
+
+model product_parent_categories {
+  name             String             @unique(map: "product_parent_categories_un")
+  image            String?
+  id               String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created_at       DateTime?          @default(now()) @db.Timestamp(6)
+  product_category product_category[]
+}
+
+model products {
+  id                  String                @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created_at          DateTime?             @default(now()) @db.Timestamptz(6)
+  name                String?               @db.Citext
+  short_description   String?
+  long_description    String?
+  thumbnail           String?
+  custom_stat         String?
+  category            String?               @db.Uuid
+  organization        String?               @db.Uuid
+  price               Float?
+  is_approved         BigInt?               @default(0)
+  is_blocked          BigInt?               @default(0)
+  item_zoho_id        String?               @db.VarChar
+  product_category    product_category?     @relation(fields: [category], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  organizations       organizations?        @relation(fields: [organization], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  request_information request_information[]
+}
+
+model profiles {
+  id                      String    @id @db.Uuid
+  updated_at              DateTime? @db.Timestamptz(6)
+  username                String?
+  avatar_url              String?
+  stripe_id               String?
+  controlled_organization String?   @db.Uuid
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model purchases {
+  id              BigInt         @id @default(autoincrement())
+  buyer_id        String?        @db.Uuid
+  items_id        Json?          @db.Json
+  total_price     String?        @db.VarChar
+  created_at      DateTime?      @default(now()) @db.Timestamptz(6)
+  organization_id String?        @db.Uuid
+  app_amount      String?        @db.VarChar
+  revenue         String?        @db.VarChar
+  users           users?         @relation(fields: [buyer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  organizations   organizations? @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ratings {
+  id            String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  stars         Int            @db.SmallInt
+  organization  String?        @db.Uuid
+  review        String?
+  title         String?
+  type          String?        @db.VarChar
+  related_id    String?        @db.Uuid
+  organizations organizations? @relation(fields: [organization], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model request_information {
+  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  user_id       String?   @db.Uuid
+  product_id    String?   @db.Uuid
+  practice_name String?   @db.VarChar
+  practice_type String?   @db.VarChar
+  location      String?   @db.VarChar
+  products      products? @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users         users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model reviews {
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  stars      Float?
+  review     String?   @db.VarChar
+  user_id    String?   @db.Uuid
+  related_id String?   @db.VarChar
+  type       String?   @db.VarChar
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model room {
+  id                              BigInt    @id @default(autoincrement())
+  room_name                       String?
+  room_owner                      String?   @db.Uuid
+  room_reciever                   String?   @db.Uuid
+  created_at                      DateTime? @default(now()) @db.Timestamptz(6)
+  item_id                         String?   @db.VarChar
+  item_type                       String?   @db.VarChar
+  message                         message[]
+  users_room_room_ownerTousers    users?    @relation("room_room_ownerTousers", fields: [room_owner], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_room_room_recieverTousers users?    @relation("room_room_recieverTousers", fields: [room_reciever], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model state {
+  id                             String   @id
+  country                        String?
+  cities_cities_stateTostate     cities[] @relation("cities_stateTostate")
+  country_state_countryTocountry country? @relation("state_countryTocountry", fields: [country], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model subscribers {
+  id         BigInt    @id @default(autoincrement())
+  email      String?   @db.VarChar
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model subscription_buyers {
+  id                      String                   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id                 String?                  @db.Uuid
+  subscription_id         String?                  @db.Uuid
+  stripe_subscription_id  String?                  @db.VarChar
+  plan_id                 String?                  @db.Uuid
+  created_at              DateTime?                @default(now()) @db.Timestamptz(6)
+  type                    String?                  @db.VarChar
+  is_expire               BigInt?                  @default(0)
+  subscription_plan_price subscription_plan_price? @relation(fields: [plan_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  subscriptions           subscriptions?           @relation(fields: [subscription_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                   users?                   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model subscription_plan_price {
+  id                         String                @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                       String?               @db.VarChar
+  price                      String?               @db.VarChar
+  qoute                      Boolean?
+  created_at                 DateTime?             @default(now()) @db.Timestamptz(6)
+  subscription_id            String?               @db.Uuid
+  subscription_yearly_price  BigInt?
+  subscription_monthly_price BigInt?
+  stripe_monthly_price       String?               @db.VarChar
+  stripe_yearly_price        String?               @db.VarChar
+  is_deleted                 BigInt?               @default(0)
+  stripe_product_id          String?               @db.VarChar
+  subscription_buyers        subscription_buyers[]
+  subscriptions              subscriptions?        @relation(fields: [subscription_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                      users[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model subscriptions {
+  id                      String                    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  subscription_title      String?                   @db.Citext
+  subscription_period     String?                   @db.VarChar
+  subscription_entry      BigInt?
+  created_at              DateTime?                 @default(now()) @db.Timestamptz(6)
+  subscription_buyers     subscription_buyers[]
+  subscription_plan_price subscription_plan_price[]
+  users                   users[]
+}
+
+model tag_categories {
+  id String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+}
+
+model tags {
+  id   String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name String? @db.VarChar
+}
+
+model user_type_list {
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  name       String?   @db.VarChar
+  type       String?   @db.VarChar
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model users {
+  id                                                   String                        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  created_at                                           DateTime?                     @default(now()) @db.Timestamptz(6)
+  user_name                                            String?                       @db.VarChar
+  user_email                                           String?                       @db.VarChar
+  office_number                                        String?                       @db.VarChar
+  office_address                                       String?                       @db.VarChar
+  phone_number                                         String?                       @db.VarChar
+  user_city                                            String?                       @db.Uuid
+  user_country                                         String?                       @db.VarChar
+  user_state                                           String?                       @db.VarChar
+  user_type_list                                       Json?                         @db.Json
+  username                                             String?                       @db.VarChar
+  areas_of_interest                                    Json?                         @db.Json
+  role_type                                            String?                       @db.VarChar
+  organization_id                                      String?                       @db.Uuid
+  image                                                String?
+  is_deleted                                           BigInt?                       @default(0)
+  zip_code                                             String?
+  short_bio                                            String?
+  long_bio                                             String?
+  is_blocked                                           BigInt?                       @default(0)
+  subscription_id                                      String?                       @db.Uuid
+  stripe_account_id                                    String?                       @db.VarChar
+  stripe_customer_id                                   String?                       @db.VarChar
+  account_setup                                        BigInt?                       @default(0)
+  plan_id                                              String?                       @db.Uuid
+  plan_type                                            String?                       @db.VarChar
+  stripe_subscription_id                               String?                       @db.VarChar
+  is_warned                                            Boolean?                      @default(false)
+  warned_count                                         BigInt?                       @default(0)
+  vendor_zoho_id                                       String?                       @db.VarChar
+  vendor_zoho_book_id                                  String?                       @db.VarChar
+  vendor_categories                                    Json[]                        @db.Json
+  services_list                                        Json[]                        @db.Json
+  articles                                             articles[]
+  avail_deal_users                                     avail_deal_users[]
+  deals                                                deals[]
+  featured_slots_avail                                 featured_slots_avail[]
+  message                                              message[]
+  organizations_organizations_organization_userTousers organizations[]               @relation("organizations_organization_userTousers")
+  purchases                                            purchases[]
+  request_information                                  request_information[]
+  reviews                                              reviews[]
+  room_room_room_ownerTousers                          room[]                        @relation("room_room_ownerTousers")
+  room_room_room_recieverTousers                       room[]                        @relation("room_room_recieverTousers")
+  services_assigned                                    services_assigned[]
+  subscription_buyers                                  subscription_buyers[]
+  organizations_users_organization_idToorganizations   organizations?                @relation("users_organization_idToorganizations", fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subscription_plan_price                              subscription_plan_price?      @relation(fields: [plan_id], references: [id], onUpdate: NoAction)
+  subscriptions                                        subscriptions?                @relation(fields: [subscription_id], references: [id], onUpdate: NoAction)
+  cities                                               cities?                       @relation(fields: [user_city], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  vendor_categories_assinged                           vendor_categories_assinged[]
+  vendor_subcategory_assigned                          vendor_subcategory_assigned[]
+  wishlist                                             wishlist[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model wishlist {
+  id         String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id    String?   @db.Uuid
+  item_id    String?
+  is_like    Boolean?
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  type       String?   @db.VarChar
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model services_list {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at        DateTime?           @default(now()) @db.Timestamptz(6)
+  service_name      String?             @db.Citext
+  service_type      String?             @db.VarChar
+  services_assigned services_assigned[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model vendor_categories {
+  id                    String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at            DateTime?              @default(now()) @db.Timestamptz(6)
+  category_name         String?                @db.Citext
+  category_type         String?                @db.Uuid
+  vendor_category_types vendor_category_types? @relation(fields: [category_type], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model vendor_category_types {
+  id                 String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at         DateTime?           @default(now()) @db.Timestamptz(6)
+  category_type_name String?             @db.Citext
+  vendor_categories  vendor_categories[]
+}
+
+model services_assigned {
+  id            BigInt         @id @default(autoincrement())
+  user_id       String?        @db.Uuid
+  service_id    String?        @db.Uuid
+  created_at    DateTime?      @default(now()) @db.Timestamptz(6)
+  services_list services_list? @relation(fields: [service_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users         users?         @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model vendor_categories_assinged {
+  id                          BigInt                        @id @default(autoincrement())
+  user_id                     String?                       @db.Uuid
+  created_at                  DateTime?                     @default(now()) @db.Timestamptz(6)
+  parent_category_id          String?                       @db.Citext
+  category_type               String?                       @db.Citext
+  users                       users?                        @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  vendor_subcategory_assigned vendor_subcategory_assigned[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model directory_subcategory {
+  id                            BigInt                         @id @default(autoincrement())
+  category_name                 String?                        @db.Citext
+  parent_category               String?                        @db.Uuid
+  price                         BigInt?
+  created_at                    DateTime?                      @default(now()) @db.Timestamptz(6)
+  directory_frontend_categories directory_frontend_categories? @relation(fields: [parent_category], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model vendor_subcategory_assigned {
+  id                         BigInt                      @id @default(autoincrement())
+  parent_id                  BigInt?
+  sub_category_id            String?                     @db.Citext
+  sub_category_type          String?                     @db.Citext
+  user_id                    String?                     @db.Uuid
+  created_at                 DateTime?                   @default(now()) @db.Timestamptz(6)
+  vendor_categories_assinged vendor_categories_assinged? @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                      users?                      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model item_additional_info {
+  id         BigInt    @id @default(autoincrement())
+  meta_key   String?   @db.Citext
+  meta_value String?   @db.Citext
+  item_type  String?   @db.Citext
+  item_id    String?   @db.Citext
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+enum course_category_type {
+  Business
+  Clinical
+}

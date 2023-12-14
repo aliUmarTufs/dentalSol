@@ -1,0 +1,27 @@
+{
+  "user_selected_categories": [
+    {
+      "type": "course",
+      "categories": [
+        {
+          "key_id": "item_unique_id",
+          "key_name": "Abc Category",
+          "subcategory": [
+            {
+              "sub_name": "abc",
+              "sub_unique_id": "123"
+            },
+            {
+              "sub_name": "abc",
+              "sub_unique_id": "123"
+            },
+            {
+              "sub_name": "abc",
+              "sub_unique_id": "123"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
